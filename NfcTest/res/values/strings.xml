@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">NfcTest</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_ndef">NdefActivity</string>
+    <string name="label_ndef_discovered">NDEF Discovered</string>
+    <string name="label_tech_discovered">TECH Discovered</string>
+    <string name="label_tag_discovered">TAG Discovered</string>
+    <string name="title_activity_tech">TechActivity</string>
+    <string name="title_activity_tag">TagActivity</string>
+    <string name="no_tag">No tag</string>
+    <string name="button_work">Work</string>
+    <string name="button_home">Home</string>
+
+</resources>
