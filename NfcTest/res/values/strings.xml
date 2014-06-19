@@ -2,16 +2,15 @@
 <resources>
 
     <string name="app_name">NfcTest</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_ndef">NdefActivity</string>
-    <string name="label_ndef_discovered">NDEF Discovered</string>
-    <string name="label_tech_discovered">TECH Discovered</string>
-    <string name="label_tag_discovered">TAG Discovered</string>
-    <string name="title_activity_tech">TechActivity</string>
-    <string name="title_activity_tag">TagActivity</string>
+    <string name="action_clear_tag">Clear tag</string>
     <string name="no_tag">No tag</string>
     <string name="button_work">Work</string>
     <string name="button_home">Home</string>
+    <string name="blank">-</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="action_settings">Settings</string>
 
 </resources>

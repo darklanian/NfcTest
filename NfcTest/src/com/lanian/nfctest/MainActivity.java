@@ -1,18 +1,16 @@
 package com.lanian.nfctest;
 
-import java.io.IOException;
+import java.util.Locale;
 
 import android.app.Activity;
+import android.app.ActionBar;
 import android.app.Fragment;
-import android.nfc.FormatException;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
-import android.nfc.NfcAdapter;
-import android.nfc.Tag;
-import android.nfc.tech.MifareUltralight;
-import android.nfc.tech.Ndef;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.view.ViewPager;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,24 +18,60 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements View.OnClickListener {
-	static final String TAG = "NfcTest";
-	static final String DOMAIN = "com.lanian";
-	static final String TYPE_PLACE = "place";
-	
-	Tag tag = null;
-	
+public class MainActivity extends Activity implements ActionBar.TabListener {
+
+	/**
+	 * The {@link android.support.v4.view.PagerAdapter} that will provide
+	 * fragments for each of the sections. We use a {@link FragmentPagerAdapter}
+	 * derivative, which will keep every loaded fragment in memory. If this
+	 * becomes too memory intensive, it may be best to switch to a
+	 * {@link android.support.v13.app.FragmentStatePagerAdapter}.
+	 */
+	SectionsPagerAdapter mSectionsPagerAdapter;
+
+	/**
+	 * The {@link ViewPager} that will host the section contents.
+	 */
+	ViewPager mViewPager;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		if (savedInstanceState == null) {
-			getFragmentManager().beginTransaction()
-					.add(R.id.container, new PlaceholderFragment()).commit();
+		// Set up the action bar.
+		final ActionBar actionBar = getActionBar();
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+		// Create the adapter that will return a fragment for each of the three
+		// primary sections of the activity.
+		mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
+
+		// Set up the ViewPager with the sections adapter.
+		mViewPager = (ViewPager) findViewById(R.id.pager);
+		mViewPager.setAdapter(mSectionsPagerAdapter);
+
+		// When swiping between different sections, select the corresponding
+		// tab. We can also use ActionBar.Tab#select() to do this if we have
+		// a reference to the Tab.
+		mViewPager
+				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+					@Override
+					public void onPageSelected(int position) {
+						actionBar.setSelectedNavigationItem(position);
+					}
+				});
+
+		// For each of the sections in the app, add a tab to the action bar.
+		for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
+			// Create a tab with text corresponding to the page title defined by
+			// the adapter. Also specify this Activity object, which implements
+			// the TabListener interface, as the callback (listener) for when
+			// this tab is selected.
+			actionBar.addTab(actionBar.newTab()
+					.setText(mSectionsPagerAdapter.getPageTitle(i))
+					.setTabListener(this));
 		}
-		
-		
 	}
 
 	@Override
@@ -59,74 +93,84 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 	@Override
-	protected void onResume() {
-		super.onResume();
-		
-		String action = getIntent().getAction();
-		Log.d(TAG, action);
-		if (action.equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
-			
-		} else if (action.equals(NfcAdapter.ACTION_TECH_DISCOVERED)) {
-			((TextView)findViewById(R.id.textView_tag)).setText(R.string.no_tag);
-			
-			tag = getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
-			for (String tech : tag.getTechList())
-				Log.d(TAG, "Tech: "+tech);
-
-			Ndef ndef = Ndef.get(tag);
-			try {
-				ndef.connect();
-				NdefMessage message = ndef.getNdefMessage();
-				if (message != null) {
-					for (NdefRecord record : message.getRecords()) {
-				
-						Log.d(TAG, "TNF: "+record.getTnf());
-						if (record.getTnf() == NdefRecord.TNF_EXTERNAL_TYPE) {
-							Log.d(TAG, "Type: "+new String(record.getType()));
-							if (new String(record.getType()).equals(DOMAIN+":"+TYPE_PLACE)) {
-								print("Payload", record.getPayload());
-								Log.d(TAG, "Uri: "+record.toUri().toString());
-								String name = new String(record.getPayload());
-								((TextView)findViewById(R.id.textView_tag)).setText(name);
-							}
-						}
-						
-					}
-					
-				}
-			} catch (IOException | FormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-				try {
-					//mifare.close();
-					ndef.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		} else if (action.equals(NfcAdapter.ACTION_TAG_DISCOVERED)) {
-			
-		}
-
+	public void onTabSelected(ActionBar.Tab tab,
+			FragmentTransaction fragmentTransaction) {
+		// When the given tab is selected, switch to the corresponding page in
+		// the ViewPager.
+		mViewPager.setCurrentItem(tab.getPosition());
 	}
-	
-	private void print(String name, byte[] buf) {
-		StringBuilder sb = new StringBuilder(name);
-		sb.append(": ");
-		for (int i = 0; i < buf.length; ++i) {
-			sb.append(String.format("%02X ", buf[i]));
+
+	@Override
+	public void onTabUnselected(ActionBar.Tab tab,
+			FragmentTransaction fragmentTransaction) {
+	}
+
+	@Override
+	public void onTabReselected(ActionBar.Tab tab,
+			FragmentTransaction fragmentTransaction) {
+	}
+
+	/**
+	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+	 * one of the sections/tabs/pages.
+	 */
+	public class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+		public SectionsPagerAdapter(FragmentManager fm) {
+			super(fm);
 		}
-		Log.d(TAG, sb.toString());
+
+		@Override
+		public Fragment getItem(int position) {
+			// getItem is called to instantiate the fragment for the given page.
+			// Return a PlaceholderFragment (defined as a static inner class
+			// below).
+			return PlaceholderFragment.newInstance(position + 1);
+		}
+
+		@Override
+		public int getCount() {
+			// Show 3 total pages.
+			return 3;
+		}
+
+		@Override
+		public CharSequence getPageTitle(int position) {
+			Locale l = Locale.getDefault();
+			switch (position) {
+			case 0:
+				return getString(R.string.title_section1).toUpperCase(l);
+			case 1:
+				return getString(R.string.title_section2).toUpperCase(l);
+			case 2:
+				return getString(R.string.title_section3).toUpperCase(l);
+			}
+			return null;
+		}
 	}
 
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
 	public static class PlaceholderFragment extends Fragment {
+		/**
+		 * The fragment argument representing the section number for this
+		 * fragment.
+		 */
+		private static final String ARG_SECTION_NUMBER = "section_number";
+
+		/**
+		 * Returns a new instance of this fragment for the given section number.
+		 */
+		public static PlaceholderFragment newInstance(int sectionNumber) {
+			PlaceholderFragment fragment = new PlaceholderFragment();
+			Bundle args = new Bundle();
+			args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+			fragment.setArguments(args);
+			return fragment;
+		}
 
 		public PlaceholderFragment() {
 		}
@@ -136,37 +180,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_main, container,
 					false);
-			
-			rootView.findViewById(R.id.button_write_tag_home).setOnClickListener((View.OnClickListener)getActivity());
-			rootView.findViewById(R.id.button_write_tag_work).setOnClickListener((View.OnClickListener)getActivity());
-			
+			TextView textView = (TextView) rootView
+					.findViewById(R.id.section_label);
+			textView.setText(Integer.toString(getArguments().getInt(
+					ARG_SECTION_NUMBER)));
 			return rootView;
-		}
-	}
-
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.button_write_tag_home:
-			writeTag(tag, "home");
-			break;
-		case R.id.button_write_tag_work:
-			writeTag(tag, "work");
-			break;
-		}
-	}
-	
-	private void writeTag(Tag tag, String name) {
-		if (tag == null)
-			return;
-		try {
-			Ndef ndef = Ndef.get(tag);
-			ndef.connect();
-			ndef.writeNdefMessage(new NdefMessage(NdefRecord.createExternal(DOMAIN, TYPE_PLACE, name.getBytes("UTF-8"))));
-			ndef.close();
-		} catch (IOException | FormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 

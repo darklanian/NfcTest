@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.lanian.nfctest.MainActivity" >
+
+    <item
+        android:id="@+id/action_clear_tag"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:title="@string/action_clear_tag" android:icon="@drawable/ic_recycle"/>
+
+</menu>
